@@ -54,10 +54,12 @@ public class ComportamientoAutomatico : MonoBehaviour {
      * 4.- Repetir hasta vaciar la pila
      */
     void UpdateMAPEO() {
-        if (fp){
-            if (!mapa.popStack(out verticeDestino)) {
-                SetState(State.DFS);
-                return;
+        //con la variable fp controlaremos si debemos sacar un vertice de la pila, los tres vertices que coloca nuestra
+        //aspiradora al frente (2), a la izquierda (1) y la derecha (3)
+        if (fp){ 
+            if (!mapa.popStack(out verticeDestino)) { //con cada popStack() sacamos el nodo
+                SetState(State.DFS);                  //y con SetState() cambiamos el estado  DFS y se llama a la funcion UpdateDFS()
+                return;                               //asi colocando los nodos
             }
             destino = verticeDestino.posicion;
             mapa.setPreV(verticeDestino);
