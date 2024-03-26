@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+//using System.Numerics;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -10,7 +11,10 @@ public class ComportamientoAutomatico : MonoBehaviour {
     //Enum para los estados
     public enum State {
         MAPEO,
-        DFS
+        DFS,
+        ASTARCARGA,
+        CONTINUARMAPEANDO,
+        CARGANDO
     }
 
     private State currentState;
@@ -19,7 +23,14 @@ public class ComportamientoAutomatico : MonoBehaviour {
 	private Mapa mapa;
     private Vertice verticeActual, verticeDestino;
     public bool fp = true, look;
+    public bool pila = true, path = false;
     public Vector3 destino;
+    public Vertice inicio, final;
+    private Grafica grafica;
+    public int s;
+    public Vertice actualCamino;
+    public int indiceCamino = 0;
+    public List<Vertice> camino = new List<Vertice>();
 
 
     void Start(){
@@ -30,17 +41,31 @@ public class ComportamientoAutomatico : MonoBehaviour {
         mapa.ColocarNodo(0);
         mapa.popStack(out verticeActual);
         destino = new Vector3(0.0f, 0.0f, 0.0f);
-        //mapa.setPreV(anterior);
+        inicio = verticeActual;
+        final = verticeActual;
     }
 
 
     void FixedUpdate() {
+        //si la bateria esta por debajo del 40%, se cambia al estado ASTARCARGA
+        if(sensor.Bateria() < 30){
+            currentState = State.ASTARCARGA;
+        }
         switch (currentState) {
             case State.MAPEO:
             UpdateMAPEO();
             break;
             case State.DFS:
             UpdateDFS();
+            break;
+            case State.ASTARCARGA:
+            UpdateAstarCarga();
+            break;
+            case State.CONTINUARMAPEANDO:
+            continuarMapeando();
+            break;
+            case State.CARGANDO:
+            cargando();
             break;
         }
     }
@@ -103,11 +128,83 @@ public class ComportamientoAutomatico : MonoBehaviour {
         if(sensor.DerechaLibre()){
             mapa.ColocarNodo(3);
         }
+        //si hay espacio libre al frente
         if(sensor.FrenteLibre()){
+            //colocamos un nodo en frente de la pila
             mapa.ColocarNodo(2);
         }
+        //se cambia el estado a mapeo
         SetState(State.MAPEO);
     }
+
+    void UpdateAstarCarga(){
+        Debug.Log("de regeso con A*");
+        //si la lista de camino esta vacia
+        if(camino.Count == 0){
+            //se busca el camino a la base de carga utilizando A*
+            if(mapa.mapa.AStar(verticeActual,mapa.baseCarga)){
+                //se guarda la lista de camino en la variable camino
+                camino = mapa.mapa.camino;
+            } else {
+                Debug.Log("No hay camino");
+            }
+        } else {
+            //si no se ha llegado al final del camino
+            if(indiceCamino != camino.Count){
+                //si la distancia al siguiente vertice es mayor a 0.04f
+                if(Vector3.Distance(sensor.Ubicacion(), camino[indiceCamino].posicion) >= 0.04f){//si no se ha llegado al vertice
+                    //se gira hacia el siguiente vertice del camino
+                    transform.LookAt(camino[indiceCamino].posicion);
+                    //se avanza hacia el siguiente vertice del camino
+                    actuador.Adelante();
+                } else {
+                    //si ya se llego al vertice
+                    //se actualiza el vertice actual al que sigue en el camino
+                    actualCamino = camino[indiceCamino];
+                    indiceCamino++;
+                }
+            } else {
+                //aqui metemos un if para checar el nivel de bateria
+                //se cambia el estado a continuar mapeando
+                SetState(State.CARGANDO);
+            }
+        }
+    }
+
+    void cargando(){
+        Debug.Log("CARGADNDO");
+        //si el nivel de bateria es mayor al 90%
+        if(sensor.Bateria() > 90){
+            SetState(State.MAPEO);
+        }
+    }
+
+    void continuarMapeando(){
+        if(indiceCamino != -1){//si todavia no hemos llegado al vertice en el que nos quedamos
+            if(indiceCamino == camino.Count){
+                indiceCamino--;
+            }
+
+            if(Vector3.Distance(sensor.Ubicacion(), camino[indiceCamino].posicion) >= 0.04f){
+                transform.LookAt(camino[indiceCamino].posicion);
+                actuador.Adelante();
+            } else {
+                actualCamino = camino[indiceCamino];
+                indiceCamino--;
+            }
+        } else {
+            //se reinicia el indice del vertice actual en la lista de camino
+            indiceCamino = 0;
+            //vaciamos la lista de camino
+            camino = new List<Vertice>();
+            //se reinicia el vertice actual
+            actualCamino = null;
+            //se cambia el estado a DFS
+            SetState(State.DFS);
+        }
+    }
+
+
 
     // Función para cambiar de estado
     void SetState(State newState) {

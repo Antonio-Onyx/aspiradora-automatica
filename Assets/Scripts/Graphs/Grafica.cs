@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -23,59 +24,65 @@ public class Grafica{
 		List<Vertice> abiertos = new List<Vertice>(); //Lista de nodos que aun no se han explorado
 		List<Vertice> cerrados = new List<Vertice>(); //Lista de nodos ya explorados
 
-		abiertos.Add(inicio);
+		inicio.g = 0;
+		inicio.h = distancia(inicio, final);
+		inicio.f = inicio.h;
+
+		abiertos.Add(inicio); //agregamos el nodo inicial a abiertos
 
 		while(abiertos.Count > 0){ //mientras la lista de abiertos no sea vacia / mientras no hayamos explorado todo
+			int i = menorF(abiertos);
 			Vertice actual;
-			actual = abiertos[0];
-			if(actual == final){
+			actual = abiertos[i]; //nuestro nodo actual es el primero en la lista de abiertos
+			if(actual.id == final.id){
 				reconstruirCamino(inicio, final);
 				return true;
 			}
-			abiertos.RemoveAt(0);
+			abiertos.RemoveAt(i);//una vez que ya pasamos por nuestro nodo visitado lo pasamos a cerrados
 			cerrados.Add(actual);
 
 			foreach(Vertice vecino in actual.vecinos){
-				if(cerrados.Contains(vecino)){
-					continue;
+				if(cerrados.IndexOf(vecino) > -1){
+					continue; //si el un vecino del nodo actual esta la lista de cerrados, nos saltamos esta iteracion
 				}
-
-				//f(n) = g(n) + h(n)
-				//g(n)
-				float costoG = actual.g + distancia(actual, vecino);
-
-				if(!abiertos.Contains(vecino) || costoG < vecino.g){
-					vecino.padre = actual;
-					vecino.g = costoG;
-					vecino.h = distancia(vecino, final);
+				if(abiertos.IndexOf(vecino) == -1){
+					abiertos.Add(vecino);
+					vecino.camino = actual;
+					vecino.g = actual.g + 1;
+					vecino.h = distancia(actual,final);
 					vecino.f = vecino.g + vecino.h;
-
-					if(!abiertos.Contains(vecino)){
-						abiertos.Add(vecino);
-					}
 				}
 			}
-
 		}
-
-		return false;
+		return true;
     }
 
 	//Auxiliar que reconstruye el camino de A*
 	public void reconstruirCamino(Vertice inicio, Vertice final) {
 		camino.Clear();
 		camino.Add(final);
+		
 		//Completar
-		verticeActual = final.camino;
-		while(verticeActual.id !=  inicio.id){
-			camino.Add(verticeActual);
-			verticeActual = verticeActual.camino;
+		var p = final.camino;
+		while(p.id !=  inicio.id){
+			camino.Insert(0, p);
+			p = p.camino;
 		}
-		camino.Add(inicio); 
+		camino.Insert(0,inicio); 
+
+		//imprimir el contenido de la lista camino en la consola
+		string aux = "";
+		foreach(Vertice v in camino){
+			aux += v.id.ToString() + ",";
+		}
 	}
 
 	float distancia(Vertice a, Vertice b) {
 		//Completar distancia entre dos vectores utilizando Vector3.distance()
+		//float distanciaX = a.posicion.x - b.posicion.x;
+		//float distanciaY = a.posicion.y - b.posicion.y;
+		//float distanciaZ = a.posicion.z - b.posicion.z;
+		//float distancia = (float)Math.Sqrt(distanciaX * distanciaX + distanciaY * distanciaY + distanciaZ * distanciaZ);
 		return Vector3.Distance(a.posicion, b.posicion);
 	}
 
@@ -83,12 +90,14 @@ public class Grafica{
 		//Coompletar
 		float menorValor = l[0].f;
 		int indice = 0;
+		int c = 0;
 
 		for(int i = 0; i < l.Count; i++){
 			if(l[i].f < menorValor){
 				menorValor = l[i].f;
-				indice = i;
+				indice = c;
 			}
+			c++;
 		}
 		return indice;
 	}

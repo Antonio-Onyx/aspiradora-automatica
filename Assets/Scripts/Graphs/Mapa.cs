@@ -13,6 +13,7 @@ public class Mapa : MonoBehaviour{
     public bool canSetNode = true;
     public float granularidad;
     Vector3 vaux;
+    public Vertice baseCarga;
 
     public Stack<Vertice> dfsStack = new Stack<Vertice>();
 
@@ -83,7 +84,8 @@ public class Mapa : MonoBehaviour{
                 newNodo = Instantiate(nodo, this.gameObject.transform.position, Quaternion.identity);//Crea un objeto de visualizaci�n, no es objeto de la gr�fica.
                 newNodo.transform.SetParent(grafica);
                 aux = new Vertice(cont, this.transform.position);
-                preV = aux;                
+                preV = aux;
+                baseCarga = aux;                
                 break;
                 case 1://Izquierda
                 vaux = transform.position + this.transform.right * -1 * granularidad;
