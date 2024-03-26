@@ -79,11 +79,12 @@ public class Grafica{
 
 	float distancia(Vertice a, Vertice b) {
 		//Completar distancia entre dos vectores utilizando Vector3.distance()
-		//float distanciaX = a.posicion.x - b.posicion.x;
-		//float distanciaY = a.posicion.y - b.posicion.y;
-		//float distanciaZ = a.posicion.z - b.posicion.z;
-		//float distancia = (float)Math.Sqrt(distanciaX * distanciaX + distanciaY * distanciaY + distanciaZ * distanciaZ);
-		return Vector3.Distance(a.posicion, b.posicion);
+		float distanciaX = a.posicion.x - b.posicion.x;
+		float distanciaY = a.posicion.y - b.posicion.y;
+		float distanciaZ = a.posicion.z - b.posicion.z;
+		float distancia = (float)Math.Sqrt(distanciaX * distanciaX + distanciaY * distanciaY + distanciaZ * distanciaZ);
+		//return Vector3.Distance(a.posicion, b.posicion);
+		return distancia;
 	}
 
 	int menorF(List<Vertice> l) {

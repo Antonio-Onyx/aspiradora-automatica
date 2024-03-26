@@ -172,10 +172,10 @@ public class ComportamientoAutomatico : MonoBehaviour {
     }
 
     void cargando(){
-        Debug.Log("CARGADNDO");
+        Debug.Log("CARGANDO");
         //si el nivel de bateria es mayor al 90%
         if(sensor.Bateria() > 90){
-            SetState(State.MAPEO);
+            SetState(State.CONTINUARMAPEANDO);
         }
     }
 
@@ -200,7 +200,7 @@ public class ComportamientoAutomatico : MonoBehaviour {
             //se reinicia el vertice actual
             actualCamino = null;
             //se cambia el estado a DFS
-            SetState(State.DFS);
+            SetState(State.MAPEO);
         }
     }
 
