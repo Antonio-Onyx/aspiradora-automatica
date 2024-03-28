@@ -31,6 +31,7 @@ public class ComportamientoAutomatico : MonoBehaviour {
     public Vertice actualCamino;
     public int indiceCamino = 0;
     public List<Vertice> camino = new List<Vertice>();
+    GameObject basura;
 
 
     void Start(){
@@ -115,6 +116,12 @@ public class ComportamientoAutomatico : MonoBehaviour {
                 verticeActual = verticeActual.padre;
                 look = false;
             }
+        }
+
+        //esto lo usamos para limpiar basura
+        if(sensor.TocandoBasura()){
+            Debug.Log("Se esta tocando la basura");
+            actuador.Limpiar(sensor.GetBasura());
         }
     }
 
